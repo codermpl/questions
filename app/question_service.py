@@ -1,4 +1,4 @@
-import operator
+import operator, re
 
 def get_questions(questions, page, size, sorts=None):
     """ Return questions based on request parameters"""
