@@ -4,6 +4,7 @@ from app.question import Question
 
 
 class CustomJSONEncoder(JSONEncoder):
+    """ Class to turn Question object to JSON """
     def default(self, obj):
         if isinstance(obj, Question):
             return {
