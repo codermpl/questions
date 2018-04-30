@@ -8,9 +8,19 @@ from app.file_import import import_csv
 from app.customJSONEncoder import CustomJSONEncoder
 import app.question_service as question_service
 
-app = Flask(__name__, static_url_path='', static_folder='static')
 cache = SimpleCache(default_timeout=0)
 DEFAULT_PAGE_SIZE = 20
+
+def setup_server():
+    new_app = Flask(__name__, static_url_path='', static_folder='static')
+    questions = import_csv('code_challenge_question_dump.csv')
+    cache.set('questions', questions)
+    cache.set('default_total_pages', math.ceil(len(questions) / DEFAULT_PAGE_SIZE))
+    new_app.json_encoder = CustomJSONEncoder
+    return new_app
+
+app = setup_server()
+
 
 @app.route("/rest/question")
 def get_all():
@@ -32,13 +42,7 @@ def get_all():
 def root():
     return render_template('index.html')
 
-
-def setup_server():
-    questions = import_csv('code_challenge_question_dump.csv')
-    cache.set('questions', questions)
-    cache.set('default_total_pages', math.ceil(len(questions) / DEFAULT_PAGE_SIZE))
-    app.json_encoder = CustomJSONEncoder
-    serve(app, host='0.0.0.0', port=33507)
-
 if __name__ == "__main__":
-    setup_server()
+    new_app = setup_server()
+    serve(new_app, host='0.0.0.0', port=33507)
+
