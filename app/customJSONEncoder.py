@@ -11,4 +11,4 @@ class CustomJSONEncoder(JSONEncoder):
                 'answer': obj.answer,
                 'distractors': obj.distractors,
             }
-        return super(CustomJSONEncoder, self).default(obj)
+        return super().default(obj)

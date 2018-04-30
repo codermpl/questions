@@ -1,4 +1,5 @@
-import math
+import math, logging
+from sys import stdout
 
 from flask import Flask, jsonify, render_template, request
 from waitress import serve
@@ -10,13 +11,20 @@ import app.question_service as question_service
 
 cache = SimpleCache(default_timeout=0)
 DEFAULT_PAGE_SIZE = 20
+log = logging.getLogger(__name__)
 
 def setup_server():
+    logging.basicConfig(stream=stdout, level="INFO")
+    log.info("Starting Server")
+
     new_app = Flask(__name__, static_url_path='', static_folder='static')
     questions = import_csv('code_challenge_question_dump.csv')
     cache.set('questions', questions)
     cache.set('default_total_pages', math.ceil(len(questions) / DEFAULT_PAGE_SIZE))
+    log.info("Loaded %s questions", len(questions))
     new_app.json_encoder = CustomJSONEncoder
+
+    log.info("Finished initializing Flask app")
     return new_app
 
 app = setup_server()
@@ -24,8 +32,9 @@ app = setup_server()
 
 @app.route("/rest/question")
 def get_all():
-    page = int(request.args.get('page', None))
-    size = int(request.args.get('size', 20))
+    log.info("Serving questions. Parameters: %s", request.args)
+    page, size = question_service.get_pagination_params(request.args)
+
     sorts = question_service.get_sorts(request.args)
 
     questions = cache.get('questions')
@@ -43,6 +52,5 @@ def root():
     return render_template('index.html')
 
 if __name__ == "__main__":
-    new_app = setup_server()
-    serve(new_app, host='0.0.0.0', port=33507)
+    serve(app, host='0.0.0.0', port=5000)
 

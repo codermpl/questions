@@ -1,4 +1,7 @@
-import operator, re
+import operator, re, logging
+
+log = logging.getLogger(__name__)
+
 
 def get_questions(questions, page, size, sorts=None):
     """ Return questions based on request parameters"""
@@ -27,3 +30,18 @@ def get_sorts(args):
                 sorts[sort_num] = {}
             sorts[sort_num][sort_type_direction] = value
     return sorts
+
+def get_pagination_params(args):
+    try:
+        page = int(args.get('page', 1))
+    except ValueError:
+        log.warning("Page parameter not valid, defaulting to 1")
+        page = 1
+
+    try:
+        size = int(args.get('size', 20))
+    except ValueError:
+        log.warning("Size parameter not valid, defaulting to 20")
+        size = 20
+
+    return page, size
